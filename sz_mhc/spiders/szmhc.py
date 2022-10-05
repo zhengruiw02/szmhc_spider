@@ -3,13 +3,8 @@ import scrapy
 from scrapy.loader import ItemLoader
 from sz_mhc.items import SzMhcItem
 
-import json
-import datetime
-
 # for regex use
 import re
-
-search_result_json = 'search_result_time.txt'
 
 class SzmhcSpider(scrapy.Spider):
     name = 'szmhc'
@@ -18,8 +13,6 @@ class SzmhcSpider(scrapy.Spider):
     def start_requests(self):
         url = 'http://wjw.sz.gov.cn/yqxx/index.html'
 
-        with open(search_result_json, 'w') as f:
-            f.write('New search at ' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '\n')
 
         yield scrapy.Request(url, callback=self.findInPage)
 
@@ -74,7 +67,7 @@ class SzmhcSpider(scrapy.Spider):
             if(result[0]):
                 results['date'] = result[0]
             
-            print(results['date'])
+            # print(results['date'])
 
         # cases
         result = re.findall(parser['cases'], report_para_innerCity)
@@ -85,7 +78,7 @@ class SzmhcSpider(scrapy.Spider):
             if(result[0][1]):
                 results['asymptomatic'] = result[0][1]
             
-            print(results['confirmed'], results['asymptomatic'])
+            # print(results['confirmed'], results['asymptomatic'])
 
             
         l = ItemLoader(item=SzMhcItem(), response=response)
@@ -93,8 +86,10 @@ class SzmhcSpider(scrapy.Spider):
         l.add_value('date', results['date'])
         # l.add_value('month', results['month'])
         # l.add_value('day', results['day'])
-        l.add_value('confirmed', results['confirmed'])
-        l.add_value('asymptomatic', results['asymptomatic'])
+        if(results['confirmed']):
+            l.add_value('confirmed', results['confirmed'])
+        if(results['asymptomatic']):
+            l.add_value('asymptomatic', results['asymptomatic'])
 
         yield l.load_item()
 
