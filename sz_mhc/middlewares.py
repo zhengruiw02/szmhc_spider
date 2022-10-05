@@ -5,8 +5,38 @@
 
 from scrapy import signals
 
+from scrapy.http import HtmlResponse
+from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
+
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
+
+
+class ChromeDownloaderMiddleware(object):
+
+    def __init__(self):
+        options = webdriver.ChromeOptions()
+        prefs = {"profile.managed_default_content_settings.images":2}
+
+        options.add_experimental_option("prefs", prefs)
+        options.add_argument('headless')
+        self.driver = webdriver.Chrome(options=options)  # 初始化Chrome驱动
+
+    def __del__(self):
+        self.driver.close()
+
+    def process_request(self, request, spider):
+        try:
+            print('Chrome driver begin...')
+            self.driver.get(request.url)  # 获取网页链接内容
+            self.driver.save_screenshot(request.url + ".png")
+            #return HtmlResponse(url=request.url, body=self.driver.page_source, request=request, encoding='utf-8',status=200)  # 返回HTML数据
+            return HtmlResponse(url=request.url, body=self.driver.page_source, request=request, encoding='utf-8')  # 返回HTML数据
+        except TimeoutException:
+            return HtmlResponse(url=request.url, request=request, encoding='utf-8', status=500)
+        finally:
+            print('Chrome driver end...')
 
 
 class SzMhcSpiderMiddleware:
