@@ -40,7 +40,11 @@ class SzmhcSpider(scrapy.Spider):
             'date' : r"(\d{1,2})月(\d{1,2})日",
             'fullDate' : r"(\d{1,2}月\d{1,2}日)",
             'cases' : r"新增[^0-9]*(\d{1,2})例[^0-9]*(\d{1,2})例",
+            'noIncrease' : r"无本土", #http://wjw.sz.gov.cn/yqxx/content/post_9730245.html
         }
+
+        # report_para_full = response.xpath('string(//div[@class="news_cont_d_wrap"])').extract_first()
+        # print(report_para_full)
 
         report_para_innerCity = response.xpath('string(//p[@style][1])').extract_first()
         #report_para_enteringCountry = response.xpath('string(//p[@style][2])').extract_first()
